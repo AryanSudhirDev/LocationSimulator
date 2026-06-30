@@ -12,6 +12,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Jekyll
+        run: |
+          gem install jekyll bundler
+          sudo ln -sf $(which jekyll) /usr/local/bin/jekyll
+
       - name: Resolve packages
         run: xcodebuild -project LocationSimulator.xcodeproj -scheme LocationSimulator -resolvePackageDependencies
 
@@ -22,6 +27,7 @@ jobs:
       - name: Zip the app
         run: |
           APP=$(find ./DerivedData -name "LocationSimulator.app" -type d | head -1)
+          echo "Found app at: $APP"
           ditto -c -k --sequesterRsrc --keepParent "$APP" LocationSimulator-macOS.zip
 
       - name: Upload
