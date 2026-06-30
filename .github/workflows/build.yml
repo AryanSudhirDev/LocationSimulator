@@ -1,0 +1,32 @@
+name: Build LocationSimulator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Resolve packages
+        run: xcodebuild -project LocationSimulator.xcodeproj -scheme LocationSimulator -resolvePackageDependencies
+
+      - name: Build
+        run: |
+          xcodebuild -project LocationSimulator.xcodeproj -scheme LocationSimulator -configuration Release -derivedDataPath ./DerivedData CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO build
+
+      - name: Zip the app
+        run: |
+          APP=$(find ./DerivedData -name "LocationSimulator.app" -type d | head -1)
+          ditto -c -k --sequesterRsrc --keepParent "$APP" LocationSimulator-macOS.zip
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: LocationSimulator-macOS
+          path: LocationSimulator-macOS.zip
+          retention-days: 7
